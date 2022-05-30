@@ -5,7 +5,7 @@ import { injectable, /* inject, */ BindingScope } from '@loopback/core';
 export class ElasticService {
   constructor(/* Add @inject to inject parameters */) { }
 
-  async getData_DrinkMoment(cookie: any, brand: any) {
+  async getData_DrinkMoment(cookie: any, brand: any, bottleCap_id: any) {
     const request = require('request')
     const fs = require('fs');
     try {
@@ -32,28 +32,44 @@ export class ElasticService {
           },
           body: JSON.stringify({
             "size": 250,
-            "query": {
-              "bool": {
-                "must": [
+            "query" : {
+              "bool" : {
+                "must" : [
+                  // {
+                  //   "wildcard" : {
+                  //     "brandInfo.imageCapturedEvent.json.HPI.keyword" : {
+                  //       "wildcard" : "*3e3*",
+                  //       "boost" : 1.0
+                  //     }
+                  //   }
+                  // },
                   {
-                    "wildcard": {
-                      "brandInfo.imageCapturedEvent.json.HPI.keyword": {
-                        "wildcard": "*3e3*",
-                        "boost": 1
-                      }
-                    }
-                  },
-                  {
-                    "term": {
-                      "brandInfo.bottleCap.brand.keyword": {
-                        "value": brand,
-                        "boost": 1
-                      }
+                    "bool" : {
+                      "must" : [
+                        {
+                          "term" : {
+                            "brandInfo.bottleCap.brand.keyword" : {
+                              "value" : brand,
+                              "boost" : 1.0
+                            }
+                          }
+                        },
+                        {
+                          "term" : {
+                            "brandInfo.bottleCap.id.keyword" : {
+                              "value" : bottleCap_id,
+                              "boost" : 1.0
+                            }
+                          }
+                        }
+                      ],
+                      "adjust_pure_negative" : true,
+                      "boost" : 1.0
                     }
                   }
                 ],
-                "adjust_pure_negative": true,
-                "boost": 1
+                "adjust_pure_negative" : true,
+                "boost" : 1.0
               }
             },
             "_source": false,
@@ -74,6 +90,7 @@ export class ElasticService {
             ]
           })
         };
+        console.log(options.body);
         request(options, function (error: any, response: any) {
           if (error) reject(error);
           try {
