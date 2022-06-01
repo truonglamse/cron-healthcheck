@@ -1,7 +1,7 @@
 // Uncomment these imports to begin using these cool features!
 
 // import {inject} from '@loopback/core';
-import {inject} from '@loopback/core';
+import { inject } from '@loopback/core';
 import {
   Request,
   RestBindings,
@@ -17,7 +17,7 @@ export class ElasticController {
   constructor(
     @inject('services.ElasticService') protected elastic: ElasticService,
     @inject('services.ApiWecheerService') protected wecheer: ApiWecheerService,
-  ) {}
+  ) { }
   @get('/getlink-and-upload')
   @response(200, {})
   async getLink(
@@ -28,22 +28,41 @@ export class ElasticController {
     @param.query.string('bottlecap_name') bottlecap_name: string,
     @param.query.string('bottleCap_id') bottleCap_id: string
   ): Promise<any> {
-    let data: any = await this.elastic.getData_DrinkMoment(cockie, brand, bottleCap_id)
     let flag = 1
+    
+    // let data_fake: any
+    // let url = data_fake.drinkMoments[0].brandInfo.imageCapturedEvent.imageUrl
+    // for (const iterator of data_fake.drinkMoments) {
+    //   let url = iterator.brandInfo.imageCapturedEvent.imageUrl;
+    //   // console.log(url);
+    //   let res: any = await this.wecheer.postUploadImage_ToTraningSet(author, traningset_name, bottlecap_name, url)
+    //   if (flag === 110) {
+    //     console.log('\n* ✨ Done *\n');
+    //     break
+    //   }
+    //   if (res.statusCode === 401) {
+    //     console.log(res.statusMessage);
+    //     break;
+    //   }
+    //   console.log('✨✨✨✨✨✨✨✨✨✨✨ Running to :[' + flag + '/' + data_fake.drinkMoments.length + '] ✨✨✨✨✨✨✨✨✨✨✨');
+    //   flag += 1
+    // }
+
+    let data: any = await this.elastic.getData_DrinkMoment(cockie, brand, bottleCap_id)
     for (const iterator of JSON.parse(data.body).hits.hits) {
       let url = iterator.fields['brandInfo.imageCapturedEvent.imageUrl'][0];
       // console.log(url);
       let res: any = await this.wecheer.postUploadImage_ToTraningSet(author, traningset_name, bottlecap_name, url)
-      // if(flag === 250){
-      //   console.log('\n* ✨ Done *\n');
-      //   break
-      // }
-      if(res.statusCode === 401){
+      if (flag === 250) {
+        console.log('\n* ✨ Done *\n');
+        break
+      }
+      if (res.statusCode === 401) {
         console.log(res.statusMessage);
         break;
       }
-      console.log('✨✨✨✨✨✨✨✨✨✨✨ Running to :[' + flag + '/'+ JSON.parse(data.body).hits.hits.length +'] ✨✨✨✨✨✨✨✨✨✨✨');
-      flag +=1
+      console.log('✨✨✨✨✨✨✨✨✨✨✨ Running to :[' + flag + '/' + JSON.parse(data.body).hits.hits.length + '] ✨✨✨✨✨✨✨✨✨✨✨');
+      flag += 1
     }
     return true
   }

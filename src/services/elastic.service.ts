@@ -31,6 +31,7 @@ export class ElasticService {
             'cookie': cookie
           },
           body: JSON.stringify({
+            "from": 0,
             "size": 250,
             "query" : {
               "bool" : {
@@ -84,7 +85,7 @@ export class ElasticService {
             "sort": [
               {
                 "_doc": {
-                  "order": "asc"
+                  "order": "desc"
                 }
               }
             ]
