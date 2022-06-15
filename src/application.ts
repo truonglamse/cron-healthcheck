@@ -1,5 +1,5 @@
 import {BootMixin} from '@loopback/boot';
-import {ApplicationConfig} from '@loopback/core';
+import {ApplicationConfig, createBindingFromClass} from '@loopback/core';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
@@ -9,6 +9,8 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
+import {CronService} from './services';
+import {CronComponent} from "@loopback/cron";
 
 export {ApplicationConfig};
 
@@ -40,5 +42,9 @@ export class GetUrlApplication extends BootMixin(
         nested: true,
       },
     };
+
+    // Set up Cron Jobs
+    this.component(CronComponent);
+    this.add(createBindingFromClass(CronService));
   }
 }
