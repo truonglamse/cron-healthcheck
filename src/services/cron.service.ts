@@ -10,8 +10,8 @@ export class CronService extends CronJob {
       onTick: async () => {
         await this.runningProcess();
       },
-      cronTime: '*/1 * * * * *', // */10 * * * * * Every ten second || 00 44 22 * * 0-6 // chạy lúc 22h44p hằng đêm || ss mm hh dd MM xxx
-      start: false, // Chạy ngay lập tức
+      cronTime: '*/1 * * * * *',
+      start: true, // Chạy ngay lập tức
       onComplete: () => {
         console.log(this.name + " Stop")
       }
