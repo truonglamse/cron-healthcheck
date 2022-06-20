@@ -20,10 +20,10 @@ export class CronService extends CronJob {
       onTick: async () => {
         // console.log('Cron-Check-Process Started!!!');
         console.log('Cron is running...' + new Date().getTime());
-        
+
         await this.runningProcess();
       },
-      cronTime: '*/5 * * * * *',
+      cronTime: '5 * * * * *',  // every 5 minutes
       start: true, // Chạy ngay lập tức
       onComplete: () => {
         console.log(this.name + " Stop")
@@ -32,7 +32,6 @@ export class CronService extends CronJob {
   }
 
   async runningProcess() {
-
     try {
       let dataConfig: any = await this.getCertificateName_Using();
       let nameFile = dataConfig[0].certificateFiles.filter((item: any) => item.inUsing == true);
@@ -47,8 +46,8 @@ export class CronService extends CronJob {
         console.log(a);
       }
     } catch (error) {
-      let b = await this.telegramService.sendMessageToChannel("Exception in Cron-Check-Process: " + stringify(error));
-        console.log(b);
+      let b = await this.telegramService.sendMessageToChannel("Exception in Cron-Check-Process: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + "\n}");
+      console.log(b);
     }
   }
 

@@ -48,3 +48,9 @@ export class GetUrlApplication extends BootMixin(
     this.add(createBindingFromClass(CronService));
   }
 }
+if (process.env.BYPASS_EXITCODE !== '') {
+  process.on('uncaughtException', function (err) {
+    console.error(err);
+    console.log('Node NOT Exiting...');
+  });
+}
