@@ -41,6 +41,7 @@ export class CronService extends CronJob {
         isAllocated: false
       });
 
+      console.log('Available Certificate: ' + count.count);
       if (count.count <= 50) {
         let a = await this.telegramService.sendMessageToChannel("The certificate is about to run out, only about : " + count.count + ", file name[" + nameFile[0].fileName + "]");
         console.log(a);
