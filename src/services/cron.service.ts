@@ -16,14 +16,14 @@ export class CronService extends CronJob {
 
   ) {
     super({
-      name: 'Cron-Check-Process',
+      name: 'Process check health !!!',
       onTick: async () => {
-        // console.log('Cron-Check-Process Started!!!');
+        
         console.log('Cron is running...' + await this.formatDate(new Date(await this.timeFormat(7))));
         await this.runningProcess();
       },
       // cronTime: '*/1 * * * * *',  //every 1s 
-      cronTime: '*/1 * * * * ', // every 2 minutes
+      cronTime: '*/2 * * * * ', // every 2 minutes
       start: true, // Chạy ngay lập tức
       onComplete: async () => {
         this.telegramService.sendMessageToChannel("Service cronjob is STOPED !!!" + this.formatDate(new Date(await this.timeFormat(7))));
@@ -80,7 +80,7 @@ export class CronService extends CronJob {
         this.telegramService.sendMessageToChannel("Update week number success, from "+ info.efuseConfig.productionCode +" to " + code);
       })
     } catch (error) {
-      let b = await this.telegramService.sendMessageToChannel("Exception in Update week nember: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + "\n}");
+      let b = await this.telegramService.sendMessageToChannel("Exception in Update week nember: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: "+ this.formatDate(new Date(await this.timeFormat(7))) +"\n}");
       console.log(b);
     }
   }
