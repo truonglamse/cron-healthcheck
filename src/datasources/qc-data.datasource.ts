@@ -4,7 +4,8 @@ import {juggler} from '@loopback/repository';
 const config = {
   name: 'qcData',
   connector: 'mongodb',
-  url: 'mongodb://qc-server:qc-server%40123@34.174.19.10:27017/qc?authSource=qc&readPreference=primary&authMechanism=DEFAULT&serverSelectionTimeoutMS=3000&retryWrites=true&directConnection=true&ssl=false',
+  // url: 'mongodb://qc-server:qc-server%40123@34.174.19.10:27017/qc?authSource=qc&readPreference=primary&authMechanism=DEFAULT&serverSelectionTimeoutMS=3000&retryWrites=true&directConnection=true&ssl=false',
+  url: 'mongodb://localhost:27017/qc',
   host: '',
   port: '',
   user: '',
