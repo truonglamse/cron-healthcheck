@@ -29,7 +29,7 @@ export class ElasticController {
     @param.query.string('bottleCap_id') bottleCap_id: string
   ): Promise<any> {
     let flag = 1
-    
+
     // let data_fake: any
     // let url = data_fake.drinkMoments[0].brandInfo.imageCapturedEvent.imageUrl
     // for (const iterator of data_fake.drinkMoments) {
@@ -65,6 +65,37 @@ export class ElasticController {
       flag += 1
     }
     return true
+  }
+
+  @get('/login')
+  @response(200, {})
+  async accessToken(
+    @param.query.string('Cookie') Cookie: string
+  ): Promise<any> {
+    let a = await this.get(Cookie)
+    return a;
+  }
+
+  async get(Cookie: any){
+    var axios = require('axios');
+    var config = {
+      method: 'get',
+      // url: 'https://insights.wecheer.io/admin/brand?label%5B%5D=carta-blanca-mx',
+      url: 'https://insights.wecheer.io/admin/auth/login',
+      // headers: {
+      //   'Cookie': 'XSRF-TOKEN=eyJpdiI6IlhDWHRnU3JcL0Ixa2IyRDRtZWZrXC9WQT09IiwidmFsdWUiOiJibVE1d3FGdG9XVmd5WlwvU0hOaXAzTnhzTVZJVThrYjJnZ0JBXC8yRTBrMWkzUEhqd0drRnJ0UEI2RHBpcU8yc3Brd0U4NFN0XC9JdkRhOW9NcVFvQXQ3QT09IiwibWFjIjoiMWYwMzBhYmI1YzM3MzhmOWQ4MjQwYmFmNDllZTA0MWMxMDM3ZmJlNTE3YTRjNjJkZjI2MGJjMjU5ZjA3M2RlOCJ9; laravel_session=eyJpdiI6ImluXC9yZW5XbktuUUdjTzVRUWdqZjFBPT0iLCJ2YWx1ZSI6IlFleXgyQ1h0czRWbEdwVFFlOWlZbjNTb1wvVjRUaDRUclM0cys1OHpLRlNyRHd3YnBzWlBRNG9YODFqdW93NThNTHk3bm1hVnV5eHZUaGVGWmt0YU1QUT09IiwibWFjIjoiYTk5MDNjNTJmNTEwYjljYjMzOTAxNTJlMWI0YjRmOWFjNTBjOTE0NDAyMTQwNWZlYmZjNzhjNzcxNzg4OGE2OCJ9'
+      // }
+    };
+    return new Promise((resolve, reject) => {
+      axios(config)
+      .then(async function (response: any) {
+
+        resolve = response.data;
+      })
+      .catch(function (error: any) {
+        reject = error;
+      });
+    });
   }
 }
 
