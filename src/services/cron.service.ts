@@ -4,13 +4,16 @@ import { repository, Where } from '@loopback/repository';
 import { stringify } from 'querystring';
 import { certificateinfos } from '../models';
 import { CertificateinfosRepository, QctoolfactoryconfigurationsRepository } from '../repositories';
+import { Convertdata2JsonService } from './convertdata-2-json.service';
+import { GoogleapisService } from './googleapis.service';
 import { TelegramService } from './telegram.service';
 
 @cronJob()
 export class CronService extends CronJob {
-
   constructor(
     @inject('services.TelegramService') private telegramService: TelegramService,
+    @inject('services.GoogleapisService') private googleapisService: GoogleapisService,
+    @inject('services.Convertdata2JsonService') private convertData2JsonService: Convertdata2JsonService,
     @repository(CertificateinfosRepository) public certificateinfosRepository: CertificateinfosRepository,
     @repository(QctoolfactoryconfigurationsRepository) public qctoolfactoryconfigurationsRepository: QctoolfactoryconfigurationsRepository,
   ) {
@@ -29,10 +32,6 @@ export class CronService extends CronJob {
       }
     });
   }
-
-
-
-
   
   async runningProcess() {
     try {
@@ -44,16 +43,23 @@ export class CronService extends CronJob {
         isAllocated: false
       });
 
+      //Check certificate file exists
       console.log('Available Certificate: ' + count.count);
       if (count.count <= 50) {
-        let a = await this.telegramService.sendMessageToChannel("The certificate is about to run out, only about : " + count.count + ", file name[" + nameFile[0].fileName + "]");
-        console.log(a);
+        this.telegramService.sendMessageToChannel("The certificate is about to run out, only about : " + count.count + ", file name[" + nameFile[0].fileName + "]");
       }
 
       //Set week number for production code
-      if(await this.timeStart()){
-        await this.setWeekProd();
+      if(await this.timeStartUpdateWeek()){
+        this.setWeekProd();
       }
+
+      //Backup mongoDb to google drive (Convert to JSON file)
+      // if(await this.timeStartBackupDB()){
+        let file = await this.convertData2JsonService.convertData2Json('2022-07-13T00:00:00.000+00:00');
+
+        this.googleapisService.uploadFile(file.path);
+      // }
 
     } catch (error) {
       this.telegramService.sendMessageToChannel("Exception in Cron-Check-Process: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: "+ this.formatDate(new Date(await this.timeFormat(7))) +"\n}");
@@ -99,7 +105,21 @@ export class CronService extends CronJob {
     return new Date().setHours(new Date().getHours() + num)
   }
 
-  async timeStart(){
+  async timeStartUpdateWeek(){
+    const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const d = new Date(await this.timeFormat(7));
+    let day = weekday[d.getDay()];
+    let hours = d.getHours();
+    let minutes = d.getMinutes();
+    if(day == "Monday" && hours == 0 && (minutes >= 0 && minutes <= 5)){
+      return true
+    }
+    else{
+      return false
+    }
+  }
+
+  async timeStartBackupDB(){
     const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     const d = new Date(await this.timeFormat(7));
     let day = weekday[d.getDay()];

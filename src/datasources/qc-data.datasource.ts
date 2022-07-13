@@ -1,11 +1,13 @@
 import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
 
+const URL = process.env.MONGODB_URL;
+
 const config = {
   name: 'qcData',
   connector: 'mongodb',
-  url: 'mongodb://qc-server:qc-server%40123@34.174.19.10:27017/qc?authSource=qc&readPreference=primary&authMechanism=DEFAULT&serverSelectionTimeoutMS=3000&retryWrites=true&directConnection=true&ssl=false',
-  // url: 'mongodb://localhost:27017/qc',
+  // url: 'mongodb://qc-server:qc-server%40123@34.174.19.10:27017/qc?authSource=qc&readPreference=primary&authMechanism=DEFAULT&serverSelectionTimeoutMS=3000&retryWrites=true&directConnection=true&ssl=false',
+  url: URL,
   host: '',
   port: '',
   user: '',
@@ -31,5 +33,7 @@ export class QcDataDataSource extends juggler.DataSource
     dsConfig: object = config,
   ) {
     super(dsConfig);
+    console.log(config);
+    
   }
 }

@@ -11,6 +11,8 @@ import path from 'path';
 import {MySequence} from './sequence';
 import {CronService} from './services';
 import {CronComponent} from "@loopback/cron";
+import * as dotenv from 'dotenv';
+
 
 export {ApplicationConfig};
 
@@ -19,6 +21,9 @@ export class GetUrlApplication extends BootMixin(
 ) {
   constructor(options: ApplicationConfig = {}) {
     super(options);
+
+    // Set up dotenv
+    dotenv.config({ path: '.env' });
 
     // Set up the custom sequence
     this.sequence(MySequence);
