@@ -1,9 +1,10 @@
-import { injectable, /* inject, */ BindingScope } from '@loopback/core';
+import { injectable, /* inject, */ BindingScope, inject } from '@loopback/core';
 import axios from 'axios';
 import { google } from 'googleapis';
 import path from 'path';
 import fs from 'fs';
 import GoogleAuth from 'google-auth-library';
+// import { TelegramService } from './telegram.service';
 
 //#region Google Drive
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -30,7 +31,9 @@ const filePath = path.join(__dirname, 'photo.jpg');
 let fileId: any;
 @injectable({ scope: BindingScope.TRANSIENT })
 export class GoogleapisService {
-    constructor() { }
+    constructor(
+        // @inject('services.TelegramService') private telegramService: TelegramService,
+    ) { }
 
     async uploadFile(filePath: string) {
         return new Promise(() => {
@@ -118,6 +121,7 @@ async function moveFileToFolder(fileId: any, folderId: any) {
             fields: 'id, parents',
         });
         console.log(files);
+        // this.telegramService.sendMessageToChannel("Backup today completed 🎉🎉🎉");
         return files;
     } catch (err) {
         throw err;

@@ -8,6 +8,8 @@ import { Convertdata2JsonService } from './convertdata-2-json.service';
 import { GoogleapisService } from './googleapis.service';
 import { TelegramService } from './telegram.service';
 
+let flagUpdated = false
+let nameFile: any
 @cronJob()
 export class CronService extends CronJob {
   constructor(
@@ -36,8 +38,7 @@ export class CronService extends CronJob {
   async runningProcess() {
     try {
       let dataConfig: any = await this.getCertificateName_Using();
-      let nameFile = dataConfig[0].certificateFiles.filter((item: any) => item.inUsing == true);
-
+      nameFile = dataConfig[0].certificateFiles.filter((item: any) => item.inUsing == true);
       let count: any = await this.countCertificateinfos({
         certificateFileName: nameFile[0].fileName,
         isAllocated: false
@@ -55,16 +56,26 @@ export class CronService extends CronJob {
       }
 
       //Backup mongoDb to google drive (Convert to JSON file)
-      // if(await this.timeStartBackupDB()){
-      let currentDate = (new Date().getFullYear()) + "-" + ((new Date().getMonth() + 1).toString().length == 1 ? '0' + (new Date().getMonth() + 1) : (new Date().getMonth())) + "-" + (new Date().getDate()) + ('T00:00:00.000+00:00');
-      // let file = await this.convertData2JsonService.convertData2Json('2022-07-13T00:00:00.000+00:00');
-      let file = await this.convertData2JsonService.convertData2Json(currentDate, nameFile[0].fileName);
-      this.googleapisService.uploadFile(file.path);
-      // }
+      if(await this.timeStartBackupDB() && !flagUpdated){
+        this.backupStart();
+      }
+
+      //
+      //
+      //
+
 
     } catch (error) {
       this.telegramService.sendMessageToChannel("Exception in Cron-Check-Process: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
     }
+  }
+
+  async backupStart(){
+    let currentDate = (new Date().getFullYear()) + "-" + ((new Date().getMonth() + 1).toString().length == 1 ? '0' + (new Date().getMonth() + 1) : (new Date().getMonth())) + "-" + (new Date().getDate()) + ('T00:00:00.000+00:00');
+    let file = await this.convertData2JsonService.convertData2Json(currentDate, nameFile[0].fileName);
+    this.googleapisService.uploadFile(file.path)
+    this.telegramService.sendMessageToChannel("Backup today completed 🎉🎉🎉");
+    flagUpdated = true
   }
 
   async countCertificateinfos(where?: Where<certificateinfos>): Promise<{}> {
@@ -122,11 +133,15 @@ export class CronService extends CronJob {
 
   async timeStartBackupDB() {
     const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const d = new Date(await this.timeFormat(7));
+    const d = new Date(await this.timeFormat(0));
     let day = weekday[d.getDay()];
     let hours = d.getHours();
     let minutes = d.getMinutes();
-    if (day == "Monday" && hours == 0 && (minutes >= 0 && minutes <= 5)) {
+
+    if(hours == 23 && (minutes > 2 && minutes < 4)){
+      flagUpdated = false
+    }
+    if (hours == 23 && (minutes >= 0 && minutes <= 2)) {
       return true
     }
     else {
