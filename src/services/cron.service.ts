@@ -32,7 +32,7 @@ export class CronService extends CronJob {
       }
     });
   }
-  
+
   async runningProcess() {
     try {
       let dataConfig: any = await this.getCertificateName_Using();
@@ -50,19 +50,20 @@ export class CronService extends CronJob {
       }
 
       //Set week number for production code
-      if(await this.timeStartUpdateWeek()){
+      if (await this.timeStartUpdateWeek()) {
         this.setWeekProd();
       }
 
       //Backup mongoDb to google drive (Convert to JSON file)
       // if(await this.timeStartBackupDB()){
-        let file = await this.convertData2JsonService.convertData2Json('2022-07-13T00:00:00.000+00:00');
-
-        this.googleapisService.uploadFile(file.path);
+      let currentDate = (new Date().getFullYear()) + "-" + ((new Date().getMonth() + 1).toString().length == 1 ? '0' + (new Date().getMonth() + 1) : (new Date().getMonth())) + "-" + (new Date().getDate()) + ('T00:00:00.000+00:00');
+      // let file = await this.convertData2JsonService.convertData2Json('2022-07-13T00:00:00.000+00:00');
+      let file = await this.convertData2JsonService.convertData2Json(currentDate, nameFile[0].fileName);
+      this.googleapisService.uploadFile(file.path);
       // }
 
     } catch (error) {
-      this.telegramService.sendMessageToChannel("Exception in Cron-Check-Process: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: "+ this.formatDate(new Date(await this.timeFormat(7))) +"\n}");
+      this.telegramService.sendMessageToChannel("Exception in Cron-Check-Process: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
     }
   }
 
@@ -74,66 +75,66 @@ export class CronService extends CronJob {
     return await this.qctoolfactoryconfigurationsRepository.find();
   }
 
-  async setWeekProd(){
+  async setWeekProd() {
     let info: any = await this.qctoolfactoryconfigurationsRepository.findOne()
-    let productionCode = info.efuseConfig.productionCode.substr(0,6)
-    let time =await this.getWeekNumber(new Date(await this.timeFormat(7)))
+    let productionCode = info.efuseConfig.productionCode.substr(0, 6)
+    let time = await this.getWeekNumber(new Date(await this.timeFormat(7)))
     let code = productionCode + time[1]
 
     try {
       let a = await this.qctoolfactoryconfigurationsRepository.updateById(info?._id, {
         //@ts-ignore
         'efuseConfig.productionCode': code
-      }).then(()=> {
-        this.telegramService.sendMessageToChannel("Update week number success, from "+ info.efuseConfig.productionCode +" to " + code);
+      }).then(() => {
+        this.telegramService.sendMessageToChannel("Update week number success, from " + info.efuseConfig.productionCode + " to " + code);
       })
     } catch (error) {
-      let b = await this.telegramService.sendMessageToChannel("Exception in Update week nember: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: "+ this.formatDate(new Date(await this.timeFormat(7))) +"\n}");
+      let b = await this.telegramService.sendMessageToChannel("Exception in Update week nember: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
       console.log(b);
     }
   }
 
   async getWeekNumber(d: any) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-    let yearStart: any = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-    let weekNo: any = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    let yearStart: any = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    let weekNo: any = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     return [d.getUTCFullYear(), weekNo];
   }
 
-  async timeFormat(num: any){
+  async timeFormat(num: any) {
     return new Date().setHours(new Date().getHours() + num)
   }
 
-  async timeStartUpdateWeek(){
-    const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  async timeStartUpdateWeek() {
+    const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const d = new Date(await this.timeFormat(7));
     let day = weekday[d.getDay()];
     let hours = d.getHours();
     let minutes = d.getMinutes();
-    if(day == "Monday" && hours == 0 && (minutes >= 0 && minutes <= 5)){
+    if (day == "Monday" && hours == 0 && (minutes >= 0 && minutes <= 5)) {
       return true
     }
-    else{
+    else {
       return false
     }
   }
 
-  async timeStartBackupDB(){
-    const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  async timeStartBackupDB() {
+    const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const d = new Date(await this.timeFormat(7));
     let day = weekday[d.getDay()];
     let hours = d.getHours();
     let minutes = d.getMinutes();
-    if(day == "Monday" && hours == 0 && (minutes >= 0 && minutes <= 5)){
+    if (day == "Monday" && hours == 0 && (minutes >= 0 && minutes <= 5)) {
       return true
     }
-    else{
+    else {
       return false
     }
   }
 
-  async formatDate(date: any){
-    return new Date(date).toLocaleDateString('en-GB', { day: "2-digit", month: "2-digit", year: "numeric", hour : "2-digit", minute : "2-digit", second : "2-digit"})
+  async formatDate(date: any) {
+    return new Date(date).toLocaleDateString('en-GB', { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })
   }
 }

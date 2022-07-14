@@ -45,7 +45,7 @@ async function uploadFile(filePath: string) {
     try {
         const response = await drive.files.create({
             requestBody: {
-                name: filePath, //This can be name of your choice
+                name: filePath.replace('./src/temple_folder/backup_mongodb/', ''), //This can be name of your choice
                 mimeType: 'application/zip',
             },
             media: {
@@ -53,7 +53,7 @@ async function uploadFile(filePath: string) {
                 body: fs.createReadStream(filePath),
             },
         });
-        // console.log(response.data);
+        console.log('Upload result:', response.data);
         fileId = response.data.id;
     } catch (error) {
         console.log(error.message);
@@ -117,7 +117,7 @@ async function moveFileToFolder(fileId: any, folderId: any) {
             removeParents: previousParents,
             fields: 'id, parents',
         });
-        console.log(files.status);
+        console.log(files);
         return files;
     } catch (err) {
         throw err;

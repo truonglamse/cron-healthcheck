@@ -41,7 +41,7 @@ export class BackupMongodbController {
   })
   async find(
   ): Promise<any> {
-    await this.convertData2JsonService.convertData2Json('2022-07-13T00:00:00.000+00:00');
+    // await this.convertData2JsonService.convertData2Json('2022-07-13T00:00:00.000+00:00');
     return true;
   }
 }

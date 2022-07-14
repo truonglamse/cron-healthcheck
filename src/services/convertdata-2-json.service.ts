@@ -24,23 +24,24 @@ export class Convertdata2JsonService {
     public qctoolfactoryconfigurationsRepository: QctoolfactoryconfigurationsRepository,
   ) { }
 
-  async convertData2Json(currentDate: any) {
+  async convertData2Json(currentDate: any, fileName: any) {
     let time = await this.formatDate(new Date(await this.timeFormat(7)));
-    time = time.replace(/\//gi, '_').replace(/, /gi, '_').replace(/:/gi, '_')
+    time = time.replace(/\//gi, '').replace(/, /gi, '').replace(/:/gi, '')
 
     // let currentDate = '2022-07-13T00:00:00.000+00:00';
     let q: any = [], w: any = [], e: any = [], r: any = [], t: any = [], y: any = [];
 
+    //#endregion Get data from database
     //@ts-ignore
     q = await this.automatictestingresultsRepository.find({ where: { date: { gte: currentDate } } })
     if (q.length > 0) q.push({ filename: "automatictestingresults" })
 
     //@ts-ignore
-    w = await this.bootsRepository.find({ where: { date: { gte: currentDate } } })
+    w = await this.bootsRepository.find({})
     if (w.length > 0) w.push({ filename: "boots" })
 
     //@ts-ignore
-    e = await this.certificateinfosRepository.find({ where: { date: { gte: currentDate } } })
+    e = await this.certificateinfosRepository.find({ where: { certificateFileName: fileName } })
     if (e.length > 0) e.push({ filename: "certificateinfos" })
 
     //@ts-ignore
@@ -48,12 +49,13 @@ export class Convertdata2JsonService {
     if (r.length > 0) r.push({ filename: "manualtestingresults" })
 
     //@ts-ignore
-    t = await this.qctoolfactoryconfigurationsRepository.find({ where: { date: { gte: currentDate } } })
+    t = await this.qctoolfactoryconfigurationsRepository.find({})
     if (t.length > 0) t.push({ filename: "qctoolfactoryconfigurations" })
 
     //@ts-ignore
     y = await this.testingresultsRepository.find({ where: { productionDate: { gte: currentDate } } })
     if (y.length > 0) y.push({ filename: "testingresults" })
+    //#endregion Get data from database
 
     let arrJson = [q, w, e, r, t, y];
     let arrPath: string[] = [];
@@ -64,7 +66,7 @@ export class Convertdata2JsonService {
         //Save json to file
         if (iterator.length > 0) {
           let filename = iterator[iterator.length - 1].filename;
-          let path = './src/temple_folder/backup_mongodb/' + filename + '_' + time + '.txt';
+          let path = './src/temple_folder/backup_mongodb/' + filename + '_' + time + '.backup';
 
           fs.writeFile(path, JSON.stringify(iterator), (err: any) => {
             if (err) throw err;
@@ -80,7 +82,7 @@ export class Convertdata2JsonService {
 
     //Compress folder to zip
     const archiver = require('archiver');
-    const pathZip = './src/temple_folder/backup_mongodb/backup_' + time + '.zip';
+    const pathZip = './src/temple_folder/backup_mongodb/Backup_' + time + '.zip';
     const output = fs.createWriteStream(pathZip);
     const archive = archiver('zip', {
       zlib: { level: 9 } // Sets the compression level.
