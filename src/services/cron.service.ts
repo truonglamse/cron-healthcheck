@@ -138,7 +138,7 @@ export class CronService extends CronJob {
     let hours = d.getHours();
     let minutes = d.getMinutes();
 
-    if(hours == 23 && (minutes > 2 && minutes < 4)){
+    if(hours == 23 && (minutes > 2 && minutes < 8)){
       flagUpdated = false
     }
     if (hours == 23 && (minutes >= 0 && minutes <= 2)) {
