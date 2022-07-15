@@ -47,7 +47,7 @@ export class CronService extends CronJob {
       //Check certificate file exists
       console.log('Available Certificate: ' + count.count);
       if (count.count <= 50) {
-        this.telegramService.sendMessageToChannel("The certificate is about to run out, only about : " + count.count + ", file name[" + nameFile[0].fileName + "]");
+        this.telegramService.sendMessageToChannel("{\n\t\t\tAvailable Certificate: " + count.count + ", \n\t\t\tfile name: [" + nameFile[0].fileName + "]\n}");
       }
 
       //Set week number for production code
@@ -56,26 +56,28 @@ export class CronService extends CronJob {
       }
 
       //Backup mongoDb to google drive (Convert to JSON file)
-      if(await this.timeStartBackupDB() && !flagUpdated){
+      if (await this.timeStartBackupDB() && !flagUpdated) {
         this.backupStart();
       }
 
       //
       //
       //
-
-
     } catch (error) {
       this.telegramService.sendMessageToChannel("Exception in Cron-Check-Process: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
     }
   }
 
-  async backupStart(){
-    let currentDate = (new Date().getFullYear()) + "-" + ((new Date().getMonth() + 1).toString().length == 1 ? '0' + (new Date().getMonth() + 1) : (new Date().getMonth())) + "-" + (new Date().getDate()) + ('T00:00:00.000+00:00');
-    let file = await this.convertData2JsonService.convertData2Json(currentDate, nameFile[0].fileName);
-    this.googleapisService.uploadFile(file.path)
-    this.telegramService.sendMessageToChannel("Backup today completed 🎉🎉🎉");
-    flagUpdated = true
+  async backupStart() {
+    try {
+      let currentDate = (new Date().getFullYear()) + "-" + ((new Date().getMonth() + 1).toString().length == 1 ? '0' + (new Date().getMonth() + 1) : (new Date().getMonth())) + "-" + (new Date().getDate()) + ('T00:00:00.000+00:00');
+      let file = await this.convertData2JsonService.convertData2Json(currentDate, nameFile[0].fileName);
+      this.googleapisService.uploadFile(file.path)
+      this.telegramService.sendMessageToChannel("Backup mongoDB today completed 🎉🎉🎉 \n{\n\t\t\tfilename: " + file.path.replace('./src/temple_folder/backup_mongodb/', '') + ",\n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
+      flagUpdated = true
+    } catch (error) {
+      this.telegramService.sendMessageToChannel("Exception in Backup mongoDB: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
+    }
   }
 
   async countCertificateinfos(where?: Where<certificateinfos>): Promise<{}> {
@@ -87,12 +89,11 @@ export class CronService extends CronJob {
   }
 
   async setWeekProd() {
-    let info: any = await this.qctoolfactoryconfigurationsRepository.findOne()
-    let productionCode = info.efuseConfig.productionCode.substr(0, 6)
-    let time = await this.getWeekNumber(new Date(await this.timeFormat(7)))
-    let code = productionCode + time[1]
-
     try {
+      let info: any = await this.qctoolfactoryconfigurationsRepository.findOne()
+      let productionCode = info.efuseConfig.productionCode.substr(0, 6)
+      let time = await this.getWeekNumber(new Date(await this.timeFormat(7)))
+      let code = productionCode + time[1]
       let a = await this.qctoolfactoryconfigurationsRepository.updateById(info?._id, {
         //@ts-ignore
         'efuseConfig.productionCode': code
@@ -100,7 +101,7 @@ export class CronService extends CronJob {
         this.telegramService.sendMessageToChannel("Update week number success, from " + info.efuseConfig.productionCode + " to " + code);
       })
     } catch (error) {
-      let b = await this.telegramService.sendMessageToChannel("Exception in Update week nember: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
+      let b = await this.telegramService.sendMessageToChannel("Exception in Update week number: \n{\n\t\t\tname: " + error.name + ", \n\t\t\terror: " + error.message + ", \n\t\t\tdate: " + this.formatDate(new Date(await this.timeFormat(7))) + "\n}");
       console.log(b);
     }
   }
@@ -132,13 +133,13 @@ export class CronService extends CronJob {
   }
 
   async timeStartBackupDB() {
-    const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const d = new Date(await this.timeFormat(0));
-    let day = weekday[d.getDay()];
+    // const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const d = new Date(await this.timeFormat(7));
+    // let day = weekday[d.getDay()];
     let hours = d.getHours();
     let minutes = d.getMinutes();
 
-    if(hours == 23 && (minutes > 2 && minutes < 8)){
+    if (hours == 23 && (minutes > 2 && minutes < 8)) {
       flagUpdated = false
     }
     if (hours == 23 && (minutes >= 0 && minutes <= 2)) {
